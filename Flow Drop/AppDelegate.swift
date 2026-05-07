@@ -8,10 +8,9 @@
 import Cocoa
 
 @main
-class AppDelegate: NSObject, NSApplicationDelegate, HoverHintDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate {
 
   var shelfWindowController: NSWindowController?
-  private var hoverHintWindow: NSWindow?
 
   // Drag Detection
   private var dragMonitor: Any?
@@ -31,42 +30,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, HoverHintDelegate {
 
     setupGlobalDragMonitoring()
     setupMouseUpMonitor()
-    setupHoverHintWindow()
-  }
-
-  // MARK: - Hover Hint Window
-  private func setupHoverHintWindow() {
-    let hintView = HoverHintView(frame: NSRect(x: 0, y: 0, width: 60, height: 120))
-    hintView.delegate = self
-
-    hoverHintWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 60, height: 120),
-                               styleMask: [],
-                               backing: .buffered,
-                               defer: false)
-    hoverHintWindow?.isOpaque = false
-    hoverHintWindow?.backgroundColor = .clear
-    hoverHintWindow?.level = .floating
-    hoverHintWindow?.contentView = hintView
-    hoverHintWindow?.collectionBehavior = [.canJoinAllSpaces, .stationary]
-
-    // Position near the shelf location (top-right area)
-    if let screen = NSScreen.main {
-      let hintX = screen.frame.maxX - 80
-      let hintY = screen.frame.midY - 60
-      hoverHintWindow?.setFrameOrigin(NSPoint(x: hintX, y: hintY))
-    }
-
-    hoverHintWindow?.makeKeyAndOrderFront(self)
-  }
-
-  // MARK: - HoverHintDelegate
-  func hoverHintDidEnter() {
-    print("[AppDelegate] hover hint entered, showing shelf")
-    showShelf()
-  }
-
-  func hoverHintDidExit() {
-    print("[AppDelegate] hover hint exited")
   }
 
   // MARK: - Global Drag Monitoring (The Magic)
@@ -83,6 +46,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, HoverHintDelegate {
                   self.showShelf()
               }
           }
+
+          // Hover detection over shelf area
+          if event.type == .mouseMoved, !self.isDragging,
+             let window = self.shelfWindowController?.window,
+             !window.isVisible {
+              let mouseLocation = NSEvent.mouseLocation
+              let hoverFrame = window.frame.insetBy(dx: -20, dy: -20)
+              if hoverFrame.contains(mouseLocation) {
+                  print("[AppDelegate] hover detected over shelf area, showing shelf")
+                  self.showShelf()
+              }
+          }
       }
   }
 
@@ -95,8 +70,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, HoverHintDelegate {
       window.alphaValue = 0.0
       window.orderFrontRegardless()
 
-      hoverHintWindow?.orderOut(self)  // Hide hint when shelf is visible
-
       vc.showWithAnimation()
   }
 
@@ -105,7 +78,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, HoverHintDelegate {
 
       vc.hideWithAnimation {
           self.isDragging = false
-          self.hoverHintWindow?.orderFrontRegardless()  // Show hint again
       }
   }
 
