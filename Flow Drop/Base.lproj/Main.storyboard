@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="XSf-x5-iiQ">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23504"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -683,9 +683,8 @@
         <!--Window Controller-->
         <scene sceneID="T8T-XH-Wo3">
             <objects>
-                <windowController id="XSf-x5-iiQ" sceneMemberID="viewController">
-                    <window key="window" title="Flow Drop" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" id="nRm-Lg-9ue">
-                        <windowStyleMask key="styleMask" titled="YES"/>
+                <windowController storyboardIdentifier="ShelfWindowController" id="XSf-x5-iiQ" sceneMemberID="viewController">
+                    <window key="window" title="Flow Drop" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="nRm-Lg-9ue">
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="-2135" y="278" width="380" height="520"/>
                         <rect key="screenRect" x="-2560" y="-195" width="2560" height="1440"/>
@@ -713,15 +712,15 @@
                         <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <visualEffectView blendingMode="behindWindow" material="HUDWindow" state="active" translatesAutoresizingMaskIntoConstraints="NO" id="qI1-xy-dkZ">
-                                <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
-                            </visualEffectView>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="TSW-g7-QYV" customClass="DropAreaView" customModule="Flow_Drop" customModuleProvider="target">
+                                <rect key="frame" x="-20" y="-20" width="520" height="310"/>
+                            </customView>
                         </subviews>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="qI1-xy-dkZ" secondAttribute="trailing" id="7N7-SL-iBP"/>
-                            <constraint firstAttribute="bottom" secondItem="qI1-xy-dkZ" secondAttribute="bottom" id="9kf-O1-NW0"/>
-                            <constraint firstItem="qI1-xy-dkZ" firstAttribute="leading" secondItem="jDI-eB-IV8" secondAttribute="leading" id="DCF-YX-ber"/>
-                            <constraint firstItem="qI1-xy-dkZ" firstAttribute="top" secondItem="jDI-eB-IV8" secondAttribute="top" id="SyH-pE-Bq0"/>
+                            <constraint firstAttribute="bottom" secondItem="TSW-g7-QYV" secondAttribute="bottom" constant="-20" id="d3a-i6-H2x"/>
+                            <constraint firstItem="TSW-g7-QYV" firstAttribute="leading" secondItem="jDI-eB-IV8" secondAttribute="leading" constant="-20" id="ew1-Ix-04l"/>
+                            <constraint firstAttribute="trailing" secondItem="TSW-g7-QYV" secondAttribute="trailing" constant="-20" id="og6-t4-Wpj"/>
+                            <constraint firstItem="TSW-g7-QYV" firstAttribute="top" secondItem="jDI-eB-IV8" secondAttribute="top" constant="-20" id="qQh-4e-vUo"/>
                         </constraints>
                     </view>
                 </viewController>
