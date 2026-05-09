@@ -116,7 +116,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
 
     private func addItemToShelf(_ item: Any) {
         print("[ShelfViewController] addItemToShelf called with \(item)")
-        let itemView = ShelfItemView(frame: NSRect(x: 0, y: 0, width: 340, height: 50))
+        let itemView = ShelfItemView(frame: NSRect(x: 0, y: 0, width: 300, height: 50))
         itemView.configure(with: item)
         stackView.addArrangedSubview(itemView)
         items.append(item)

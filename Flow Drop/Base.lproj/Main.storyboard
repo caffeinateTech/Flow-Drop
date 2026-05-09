@@ -686,10 +686,10 @@
                 <windowController storyboardIdentifier="ShelfWindowController" id="XSf-x5-iiQ" sceneMemberID="viewController">
                     <window key="window" title="Flow Drop" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="nRm-Lg-9ue">
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="-2135" y="278" width="380" height="520"/>
+                        <rect key="contentRect" x="-2135" y="278" width="300" height="500"/>
                         <rect key="screenRect" x="-2560" y="-195" width="2560" height="1440"/>
                         <view key="contentView" id="Xmd-AX-ZRc">
-                            <rect key="frame" x="0.0" y="0.0" width="380" height="520"/>
+                            <rect key="frame" x="0.0" y="0.0" width="300" height="500"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </view>
                         <connections>
@@ -709,11 +709,11 @@
             <objects>
                 <viewController id="P4U-k5-v4U" customClass="ShelfViewController" customModule="Flow_Drop" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="jDI-eB-IV8">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                        <rect key="frame" x="0.0" y="0.0" width="300" height="500"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="TSW-g7-QYV" customClass="DropAreaView" customModule="Flow_Drop" customModuleProvider="target">
-                                <rect key="frame" x="-20" y="-20" width="520" height="310"/>
+                                <rect key="frame" x="-20" y="-20" width="340" height="540"/>
                             </customView>
                         </subviews>
                         <constraints>
