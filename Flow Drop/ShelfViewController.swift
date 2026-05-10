@@ -8,6 +8,8 @@
 import Cocoa
 
 class ShelfViewController: NSViewController, DropAreaViewDelegate {
+    static let restingAlpha: CGFloat = 0.5
+    static let highlightedAlpha: CGFloat = 1.0
 
     private var visualEffectView: NSVisualEffectView!
     private var scrollView: NSScrollView!
@@ -114,6 +116,14 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         }
     }
 
+    func dropAreaDidEnterDrag(_ dropArea: DropAreaView) {
+        setHighlighted(true)
+    }
+
+    func dropAreaDidExitDrag(_ dropArea: DropAreaView) {
+        setHighlighted(false)
+    }
+
     private func addItemToShelf(_ item: Any) {
         print("[ShelfViewController] addItemToShelf called with \(item)")
         let itemView = ShelfItemView(frame: NSRect(x: 0, y: 0, width: 300, height: 50))
@@ -146,7 +156,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            window.animator().alphaValue = 1.0
+            window.animator().alphaValue = Self.restingAlpha
         }, completionHandler: nil)
     }
 
@@ -157,7 +167,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
             window.animator().alphaValue = 0.0
         }, completionHandler: {
             window.orderOut(nil)
-            window.alphaValue = 1.0
+            window.alphaValue = Self.restingAlpha
             completion?()
         })
     }
@@ -167,15 +177,52 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         guard let window = view.window else { return }
 
         window.level = .floating          // Always on top
-        window.isMovableByWindowBackground = true   // Drag by clicking anywhere
+        window.isMovable = false
+        window.isMovableByWindowBackground = false
         window.hasShadow = true
         window.backgroundColor = .clear
         window.isOpaque = false
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.alphaValue = Self.restingAlpha
+        window.ignoresMouseEvents = false
+    }
+
+    func setHighlighted(_ highlighted: Bool, animated: Bool = true) {
+        guard let window = view.window else { return }
+        let targetAlpha = highlighted ? Self.highlightedAlpha : Self.restingAlpha
+
+        if animated {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.15
+                window.animator().alphaValue = targetAlpha
+            }
+        } else {
+            window.alphaValue = targetAlpha
+        }
+    }
+
+    func positionOnLeft(of screen: NSScreen, animated: Bool = false) {
+        guard let window = view.window else { return }
+        let visibleFrame = screen.visibleFrame
+        let width = window.frame.width
+        let height = window.frame.height
+
+        let x = visibleFrame.minX
+        let centeredY = visibleFrame.midY - (height / 2.0)
+        let y = max(visibleFrame.minY, min(centeredY, visibleFrame.maxY - height))
+        let targetFrame = NSRect(x: x, y: y, width: width, height: height)
+
+        if animated {
+            window.animator().setFrame(targetFrame, display: true)
+        } else {
+            window.setFrame(targetFrame, display: true)
+        }
     }
 
     override func viewDidAppear() {
         super.viewDidAppear()
         print("[ShelfViewController] viewDidAppear")
         setupWindow()
+        setHighlighted(false, animated: false)
     }
 }

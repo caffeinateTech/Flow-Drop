@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   // Drag Detection
   private var dragMonitor: Any?
+  private var mouseUpMonitor: Any?
   private var lastDragPasteboardChangeCount = 0
   private var isDragging = false
 
@@ -24,18 +25,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let storyboard = NSStoryboard(name: "Main", bundle: nil)
     shelfWindowController = storyboard.instantiateController(withIdentifier: "ShelfWindowController") as? NSWindowController
 
-    if let window = shelfWindowController?.window {
-      window.orderOut(self)  // Hide initially
-    }
+    showShelfOnFocusedScreen()
 
     setupGlobalDragMonitoring()
     setupMouseUpMonitor()
+    setupScreenChangeMonitoring()
   }
 
   // MARK: - Global Drag Monitoring (The Magic)
   private func setupGlobalDragMonitoring() {
-      dragMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDragged, .mouseMoved]) { [weak self] event in
+      dragMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDragged, .mouseMoved]) { [weak self] _ in
           guard let self = self else { return }
+          self.updateShelfScreenAndHover(using: NSEvent.mouseLocation)
 
           let dragPB = NSPasteboard(name: .drag)
 
@@ -43,55 +44,87 @@ class AppDelegate: NSObject, NSApplicationDelegate {
               self.lastDragPasteboardChangeCount = dragPB.changeCount
               if !self.isDragging {
                   self.isDragging = true
-                  self.showShelf()
-              }
-          }
-
-          // Hover detection over shelf area
-          if event.type == .mouseMoved, !self.isDragging,
-             let window = self.shelfWindowController?.window,
-             !window.isVisible {
-              let mouseLocation = NSEvent.mouseLocation
-              let hoverFrame = window.frame.insetBy(dx: -20, dy: -20)
-              if hoverFrame.contains(mouseLocation) {
-                  print("[AppDelegate] hover detected over shelf area, showing shelf")
-                  self.showShelf()
+                  self.setShelfHighlighted(true)
               }
           }
       }
   }
 
   // MARK: - Shelf Control
-  private func showShelf() {
+  private func showShelfOnFocusedScreen() {
       guard let vc = shelfWindowController?.contentViewController as? ShelfViewController,
             let window = shelfWindowController?.window else { return }
 
-      window.level = .popUpMenu      // Better than .floating for this use case
-      window.alphaValue = 0.0
+      window.level = .floating
       window.orderFrontRegardless()
-
-      vc.showWithAnimation()
+      vc.setHighlighted(false, animated: false)
+      positionShelfOnFocusedScreen(animated: false)
   }
 
-  private func hideShelf() {
+  private func setShelfHighlighted(_ highlighted: Bool) {
       guard let vc = shelfWindowController?.contentViewController as? ShelfViewController else { return }
+      vc.setHighlighted(highlighted)
+  }
 
-      vc.hideWithAnimation {
-          self.isDragging = false
+  private func positionShelfOnFocusedScreen(animated: Bool) {
+      guard let vc = shelfWindowController?.contentViewController as? ShelfViewController else { return }
+      let mouseLocation = NSEvent.mouseLocation
+      if let currentScreen = NSScreen.screens.first(where: { NSMouseInRect(mouseLocation, $0.frame, false) }) {
+          vc.positionOnLeft(of: currentScreen, animated: animated)
+      } else if let mainScreen = NSScreen.main {
+          vc.positionOnLeft(of: mainScreen, animated: animated)
+      }
+  }
+
+  private func updateShelfScreenAndHover(using mouseLocation: NSPoint) {
+      guard let window = shelfWindowController?.window else { return }
+
+      if let currentScreen = NSScreen.screens.first(where: { NSMouseInRect(mouseLocation, $0.frame, false) }),
+         window.screen !== currentScreen {
+          positionShelfOnFocusedScreen(animated: true)
+      }
+
+      if isDragging {
+          setShelfHighlighted(true)
+      } else {
+          let hoverFrame = window.frame.insetBy(dx: -8, dy: -8)
+          setShelfHighlighted(hoverFrame.contains(mouseLocation))
       }
   }
 
   // Handle mouse up to hide shelf when drag ends
   private func setupMouseUpMonitor() {
-    NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
+    mouseUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp]) { [weak self] _ in
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-        self?.hideShelf()
+        self?.isDragging = false
+        self?.setShelfHighlighted(false)
       }
     }
   }
 
+  private func setupScreenChangeMonitoring() {
+      NotificationCenter.default.addObserver(
+          forName: NSWorkspace.activeSpaceDidChangeNotification,
+          object: nil,
+          queue: .main
+      ) { [weak self] _ in
+          self?.positionShelfOnFocusedScreen(animated: true)
+      }
+
+      NotificationCenter.default.addObserver(
+          forName: NSApplication.didChangeScreenParametersNotification,
+          object: nil,
+          queue: .main
+      ) { [weak self] _ in
+          self?.positionShelfOnFocusedScreen(animated: true)
+      }
+  }
+
   func applicationWillTerminate(_ aNotification: Notification) {
     if let monitor = dragMonitor {
+      NSEvent.removeMonitor(monitor)
+    }
+    if let monitor = mouseUpMonitor {
       NSEvent.removeMonitor(monitor)
     }
   }
