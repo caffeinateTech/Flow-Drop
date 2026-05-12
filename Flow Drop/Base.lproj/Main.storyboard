@@ -22,7 +22,11 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
-                                        <menuItem title="Preferences…" keyEquivalent="," id="BOF-NM-1cW"/>
+                                        <menuItem title="Preferences…" keyEquivalent="," id="BOF-NM-1cW">
+                                            <connections>
+                                                <segue destination="5m5-oM-wOV" kind="show" id="47Y-dS-uEz"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wFC-TO-SCJ"/>
                                         <menuItem title="Services" id="NMo-om-nkz">
                                             <modifierMask key="keyEquivalentModifierMask"/>
@@ -679,6 +683,96 @@
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="75" y="0.0"/>
+        </scene>
+        <!--Window Controller-->
+        <scene sceneID="Ym7-nj-O0f">
+            <objects>
+                <windowController id="5m5-oM-wOV" sceneMemberID="viewController">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="bJ1-lb-nCp">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="-2135" y="278" width="480" height="270"/>
+                        <rect key="screenRect" x="-2560" y="-195" width="2560" height="1440"/>
+                        <view key="contentView" id="fRI-EL-xGy">
+                            <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </view>
+                        <connections>
+                            <outlet property="delegate" destination="5m5-oM-wOV" id="Cuh-xa-J2d"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <segue destination="hGS-0G-LN1" kind="relationship" relationship="window.shadowedContentViewController" id="o6g-6f-66Q"/>
+                    </connections>
+                </windowController>
+                <customObject id="ze0-eD-ffd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="648" y="148"/>
+        </scene>
+        <!--Settings View Controller-->
+        <scene sceneID="oVy-Fe-4nW">
+            <objects>
+                <viewController id="hGS-0G-LN1" customClass="SettingsViewController" customModule="Flow_Drop" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="OtZ-yc-8hN">
+                        <rect key="frame" x="0.0" y="0.0" width="294" height="270"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9CR-er-acx">
+                                <rect key="frame" x="51" y="211" width="50" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Left" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="jDu-s1-eT4">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onLeftButtonClicked:" target="hGS-0G-LN1" id="Lvj-SP-sF5"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wkp-UM-Ust">
+                                <rect key="frame" x="163" y="211" width="58" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Right" bezelStyle="regularSquare" imagePosition="left" inset="2" id="4fl-uN-4WR">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onRightButtonClicked:" target="hGS-0G-LN1" id="3Vr-Tk-HCC"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uZW-Cz-Cp6">
+                                <rect key="frame" x="87" y="118" width="106" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="push" title="Clear Board" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8DU-OF-8j3">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onClearBoardButtonCLicked:" target="hGS-0G-LN1" id="b8g-Eu-rx0"/>
+                                </connections>
+                            </button>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ylV-cX-cZl">
+                                <rect key="frame" x="43" y="55" width="207" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Keep board between sessions" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="OI1-Uy-WJR">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="onKeepDataButtonClicked:" target="hGS-0G-LN1" id="Sq4-vm-okZ"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                    </view>
+                    <connections>
+                        <outlet property="clearBoardButton" destination="uZW-Cz-Cp6" id="YkF-Ax-psg"/>
+                        <outlet property="keepDataCheckBox" destination="ylV-cX-cZl" id="Efe-qc-Yo7"/>
+                        <outlet property="leftCheckBoxButton" destination="9CR-er-acx" id="s3B-0E-N2x"/>
+                        <outlet property="rightCheckBoxButton" destination="Wkp-UM-Ust" id="rVa-Y2-hdH"/>
+                    </connections>
+                </viewController>
+                <customObject id="KkN-NJ-Grl" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1262" y="117"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="T8T-XH-Wo3">

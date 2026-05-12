@@ -14,6 +14,10 @@ class ShelfItemView: NSView, NSDraggingSource {
     private let removeButton = NSButton()
 
     var representedObject: Any?
+    var itemID: String?
+    var persistedKind: AppSettings.PersistedShelfItem.Kind?
+    var onRemove: ((ShelfItemView) -> Void)?
+    private var securityScopedAccessActive = false
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -77,6 +81,9 @@ class ShelfItemView: NSView, NSDraggingSource {
         // Fixed height for stack view layout
         self.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
+        setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
         // Hover effect
         let trackingArea = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self, userInfo: nil)
         addTrackingArea(trackingArea)
@@ -122,8 +129,7 @@ class ShelfItemView: NSView, NSDraggingSource {
     }
 
     @objc private func removeTapped() {
-        // Remove from superview and notify parent if needed
-        removeFromSuperview()
+        onRemove?(self)
     }
 
     override func mouseEntered(with event: NSEvent) {
@@ -145,20 +151,50 @@ class ShelfItemView: NSView, NSDraggingSource {
     private func startDrag(with event: NSEvent) {
         guard let representedObject = representedObject else { return }
 
-        let pasteboardItem = NSPasteboardItem()
+        let kind = persistedKind
+        print("[ShelfItemView] startDrag id=\(itemID ?? "nil") kind=\(kind?.rawValue ?? "unknown")")
 
+        let draggingItem: NSDraggingItem
         if let url = representedObject as? URL {
-            pasteboardItem.setString(url.absoluteString, forType: .fileURL)
+            if kind == .url {
+                let pasteboardItem = NSPasteboardItem()
+                pasteboardItem.setString(url.absoluteString, forType: .URL)
+                draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
+            } else {
+                if url.startAccessingSecurityScopedResource() {
+                    securityScopedAccessActive = true
+                    print("[ShelfItemView] security scope started for drag")
+                } else {
+                    print("[ShelfItemView] WARNING: startAccessingSecurityScopedResource failed (sandbox bookmark may be missing)")
+                }
+                draggingItem = NSDraggingItem(pasteboardWriter: url as NSURL)
+            }
         } else if let text = representedObject as? String {
+            let pasteboardItem = NSPasteboardItem()
             pasteboardItem.setString(text, forType: .string)
+            draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
         } else if let image = representedObject as? NSImage, let tiffData = image.tiffRepresentation {
+            let pasteboardItem = NSPasteboardItem()
             pasteboardItem.setData(tiffData, forType: .tiff)
+            draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
+        } else {
+            return
         }
 
-        let draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
         draggingItem.setDraggingFrame(bounds, contents: iconImageView.image)
 
         beginDraggingSession(with: [draggingItem], event: event, source: self)
+    }
+
+    private func endSecurityScopedAccessIfNeeded() {
+        guard securityScopedAccessActive, let url = representedObject as? URL, url.isFileURL else { return }
+        url.stopAccessingSecurityScopedResource()
+        securityScopedAccessActive = false
+        print("[ShelfItemView] security scope ended after drag")
+    }
+
+    deinit {
+        endSecurityScopedAccessIfNeeded()
     }
 
     // NSDraggingSource
@@ -167,9 +203,10 @@ class ShelfItemView: NSView, NSDraggingSource {
     }
 
     func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+        endSecurityScopedAccessIfNeeded()
         if operation.rawValue != 0 {
             // Successfully dragged out, remove from shelf
-            removeFromSuperview()
+            onRemove?(self)
         }
     }
 }
