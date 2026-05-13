@@ -10,11 +10,17 @@ import Cocoa
 class ShelfViewController: NSViewController, DropAreaViewDelegate {
     static let restingAlpha: CGFloat = 0.7
     static let highlightedAlpha: CGFloat = 1.0
-    private static let minimumVisibleEdgePixels: CGFloat = 24
+    /// Narrow resting strip (must stay ≥ window min width in storyboard / `setupWindow`).
+    private static let minimumVisibleEdgePixels: CGFloat = 18
 
     private var visualEffectView: NSVisualEffectView!
     private var scrollView: NSScrollView!
     private var stackView: NSStackView!
+    /// Constraints for scrollView when the shelf is expanded (margins to superview).
+    private var scrollExpandedConstraints: [NSLayoutConstraint] = []
+    /// Constraints that collapse scrollView to zero width so the window can shrink to the resting strip.
+    private var scrollCollapsedConstraints: [NSLayoutConstraint] = []
+    private var scrollLayoutIsCollapsed = false
 
     private var items: [AppSettings.PersistedShelfItem] = []
     private var expandedWidth: CGFloat = 0
@@ -25,8 +31,10 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
     /// Screen last set by `position(on:side:...)` so expand/collapse does not re-resolve from window geometry.
     private var pinnedScreen: NSScreen?
     private var highlightResetWorkItem: DispatchWorkItem?
-    /// True after `didReceiveItems` in the current drag; `dropAreaDidExitDrag` then skips immediate collapse so the 1s timer can run.
+    /// True after `didReceiveItems` in the current drag; `dropAreaDidExitDrag` skips immediate collapse so the delayed reset can run.
     private var didReceiveDropThisDraggingSession = false
+    /// After a successful drop, keep shelf highlighted briefly even if hover flickers during mouse-up.
+    private var postDropGraceUntil: Date?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,6 +52,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
     private func configureDropAreaDelegate() {
         if let dropArea = findDropArea(in: view) {
             dropArea.delegate = self
+            dropArea.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             print("[ShelfViewController] DropAreaView delegate connected")
         } else {
             print("[ShelfViewController] WARNING: DropAreaView delegate not found")
@@ -86,13 +95,8 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         scrollView.scrollerStyle = .overlay
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
-
-        NSLayoutConstraint.activate([
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12)
-        ])
+        // Do not pin scrollView here — `buildScrollLayoutConstraintSets` + `applyScrollLayoutForShelfExpanded`
+        // own expanded vs collapsed constraints. Duplicate constraints would stay active and block a narrow window.
 
         // Stack View
         stackView = NSStackView()
@@ -114,7 +118,45 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         // Resting = not highlighted: hide item list until hover/drag highlights the shelf.
         stackView.isHidden = true
 
+        buildScrollLayoutConstraintSets()
+        applyScrollLayoutForShelfExpanded(false)
+
         print("[ShelfViewController] setupUI completed")
+    }
+
+    private func buildScrollLayoutConstraintSets() {
+        scrollExpandedConstraints = [
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12)
+        ]
+        scrollCollapsedConstraints = [
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.widthAnchor.constraint(equalToConstant: 0),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8)
+        ]
+    }
+
+    /// NSScrollView + margins cannot shrink to ~18pt; use zero-width scroll layout when resting.
+    private func applyScrollLayoutForShelfExpanded(_ expanded: Bool) {
+        if expanded == !scrollLayoutIsCollapsed { return }
+        if expanded {
+            NSLayoutConstraint.deactivate(scrollCollapsedConstraints)
+            NSLayoutConstraint.activate(scrollExpandedConstraints)
+            scrollView.isHidden = false
+            scrollView.hasVerticalScroller = true
+            scrollLayoutIsCollapsed = false
+        } else {
+            NSLayoutConstraint.deactivate(scrollExpandedConstraints)
+            NSLayoutConstraint.activate(scrollCollapsedConstraints)
+            scrollView.isHidden = true
+            scrollView.hasVerticalScroller = false
+            scrollLayoutIsCollapsed = true
+        }
+        view.needsUpdateConstraints = true
+        view.layoutSubtreeIfNeeded()
     }
 
     func didReceiveItems(_ pasteboardItems: [NSPasteboardItem]) {
@@ -152,8 +194,15 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         }
         if didAddAny {
             didReceiveDropThisDraggingSession = true
+            postDropGraceUntil = Date().addingTimeInterval(1.5)
             scheduleHighlightResetAfterInteraction()
         }
+    }
+
+    /// While active, AppDelegate hover logic keeps the shelf expanded/highlighted.
+    func isPostDropGraceActive() -> Bool {
+        guard let end = postDropGraceUntil else { return false }
+        return Date() < end
     }
 
     func dropAreaDidEnterDrag(_ dropArea: DropAreaView) {
@@ -251,9 +300,8 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         window.contentMinSize = NSSize(width: Self.minimumVisibleEdgePixels, height: 220)
         window.minSize = NSSize(width: Self.minimumVisibleEdgePixels, height: 220)
         view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        expandedWidth = max(window.frame.width, 260)
+        expandedWidth = max(window.frame.width, 300)
         applyCurrentSideFromSettings(animated: false, hideDuringMove: false)
-        applyExpandedState(false, animated: false, hideDuringMove: false)
     }
 
     /// Global hover hit zone anchored to the **pinned screen** and expanded width — does not use `window.frame`,
@@ -282,9 +330,42 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         isHighlighted = highlighted
         let targetAlpha = highlighted ? Self.highlightedAlpha : Self.restingAlpha
 
-        applyExpandedState(highlighted, animated: animated, hideDuringMove: false)
-        applyAlpha(targetAlpha, animated: animated)
-        updateShelfItemsVisibility()
+        guard let window = view.window else { return }
+        let screen = pinnedScreen ?? window.screen ?? NSScreen.main
+        guard let screen else { return }
+
+        stackView.isHidden = true
+
+        if !highlighted {
+            applyScrollLayoutForShelfExpanded(false)
+            view.layoutSubtreeIfNeeded()
+            window.layoutIfNeeded()
+        }
+
+        isExpanded = highlighted
+        let targetFrame = targetFrameForCurrentState(screen: screen, expanded: highlighted)
+
+        if animated {
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.2
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                window.animator().setFrame(targetFrame, display: true)
+                window.animator().alphaValue = targetAlpha
+            }, completionHandler: { [weak self] in
+                guard let self else { return }
+                if self.isHighlighted {
+                    self.applyScrollLayoutForShelfExpanded(true)
+                    self.stackView.isHidden = false
+                }
+            })
+        } else {
+            if highlighted {
+                applyScrollLayoutForShelfExpanded(true)
+            }
+            window.setFrame(targetFrame, display: true)
+            window.alphaValue = targetAlpha
+            updateShelfItemsVisibility()
+        }
     }
 
     /// Items are only visible while the shelf is highlighted (hover / drag / post-drop window).
@@ -329,7 +410,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         persistItemsIfNeeded()
     }
 
-    /// Collapsed: fixed **24pt** wide window fully inside `visibleFrame` (no bleed to adjacent displays).
+    /// Collapsed: narrow strip fully inside `visibleFrame` (no bleed to adjacent displays).
     /// Expanded: full width inside `visibleFrame`.
     private func targetFrameForCurrentState(screen: NSScreen, expanded: Bool) -> NSRect {
         let visibleFrame = screen.visibleFrame
@@ -358,18 +439,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
             return
         }
         position(on: screen, side: currentSide, animated: animated, hideDuringMove: hideDuringMove)
-    }
-
-    private func applyAlpha(_ alpha: CGFloat, animated: Bool) {
-        guard let window = view.window else { return }
-        if animated {
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.15
-                window.animator().alphaValue = alpha
-            }
-        } else {
-            window.alphaValue = alpha
-        }
     }
 
     private func makeSecurityScopedBookmark(for url: URL) -> Data? {
@@ -521,14 +590,19 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         highlightResetWorkItem = nil
     }
 
-    /// After a drop (or leaving the drop area), wait before dimming so the user sees feedback.
+    /// After a drop, stay highlighted ~1.5s; then rest only if the cursor is not over the shelf strip.
     private func scheduleHighlightResetAfterInteraction() {
         cancelHighlightResetWorkItem()
         let work = DispatchWorkItem { [weak self] in
-            self?.setHighlighted(false, animated: true)
+            guard let self else { return }
+            self.postDropGraceUntil = nil
+            if self.globalPointInteractsWithShelfHover(NSEvent.mouseLocation) {
+                return
+            }
+            self.setHighlighted(false, animated: true)
         }
         highlightResetWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
     }
 
     private func applyCurrentSideFromSettings(animated: Bool, hideDuringMove: Bool) {

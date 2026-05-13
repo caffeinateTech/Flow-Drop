@@ -7,8 +7,6 @@
 
 import Cocoa
 
-import Cocoa
-
 protocol DropAreaViewDelegate: AnyObject {
     func didReceiveItems(_ items: [NSPasteboardItem])   // Match what you have
     func dropAreaDidEnterDrag(_ dropArea: DropAreaView)
@@ -51,14 +49,14 @@ class DropAreaView: NSView {
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        layer?.backgroundColor = nil
-        delegate?.dropAreaDidExitDrag(self)
         let pasteboardItems = sender.draggingPasteboard.pasteboardItems ?? []
+        // Apply drop first so shelf state (grace timer, items) is set before any synchronous `draggingExited`.
+        delegate?.didReceiveItems(pasteboardItems)
+        layer?.backgroundColor = nil
         print("[DropAreaView] performDragOperation items=\(pasteboardItems.count)")
         for (index, item) in pasteboardItems.enumerated() {
             print("[DropAreaView] item[\(index)] types=\(item.types)")
         }
-        delegate?.didReceiveItems(pasteboardItems)
         return true
     }
 }

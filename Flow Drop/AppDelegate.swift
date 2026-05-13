@@ -161,6 +161,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
       if isDragging {
           setShelfHighlighted(true)
+      } else if vc.isPostDropGraceActive() {
+          setShelfHighlighted(true)
       } else {
           // Do not use `window.frame` here: it changes every frame during width animation and makes hover flicker.
           setShelfHighlighted(vc.globalPointInteractsWithShelfHover(mouseLocation))
