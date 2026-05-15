@@ -65,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var lastShelfScreenNumber: UInt32?
   private var clickMonitorGlobal: Any?
   private var clickMonitorLocal: Any?
+  private var keyboardStashMonitor: KeyboardStashMonitor?
 
   private func screenNumber(for screen: NSScreen) -> UInt32? {
       (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value
@@ -86,11 +87,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     shelfWindowController = storyboard.instantiateController(withIdentifier: "ShelfWindowController") as? NSWindowController
 
     showShelfOnFocusedScreen()
+    setupKeyboardStashMonitor()
 
     setupGlobalDragMonitoring()
     setupMouseUpMonitor()
     setupClickToAnchorScreen()
     setupScreenChangeMonitoring()
+  }
+
+  private func setupKeyboardStashMonitor() {
+      guard let vc = shelfWindowController?.contentViewController as? ShelfViewController else { return }
+      let monitor = KeyboardStashMonitor(shelfViewController: vc)
+      monitor.start()
+      keyboardStashMonitor = monitor
+      print("[AppDelegate] keyboard stash monitor started (\(KeyboardStashMonitor.shortcutDisplayName))")
   }
 
   // MARK: - Global Drag Monitoring (The Magic)
@@ -239,6 +249,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     if let monitor = clickMonitorLocal {
       NSEvent.removeMonitor(monitor)
     }
+    keyboardStashMonitor?.stop()
+    keyboardStashMonitor = nil
   }
 
   func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {

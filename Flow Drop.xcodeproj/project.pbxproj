@@ -256,6 +256,8 @@
 				DEVELOPMENT_TEAM = SXFJ5K42NW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Flow Drop reads Finder selections when you use the stash shortcut to add files to the shelf.";
+				INFOPLIST_KEY_NSAccessibilityUsageDescription = "Flow Drop uses Accessibility to detect drags near the shelf and to copy your current selection when you press Control+Shift+S.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -284,6 +286,8 @@
 				DEVELOPMENT_TEAM = SXFJ5K42NW;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Flow Drop reads Finder selections when you use the stash shortcut to add files to the shelf.";
+				INFOPLIST_KEY_NSAccessibilityUsageDescription = "Flow Drop uses Accessibility to detect drags near the shelf and to copy your current selection when you press Control+Shift+S.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;

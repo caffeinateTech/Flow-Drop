@@ -14,6 +14,9 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
 
     static let restingAlpha: CGFloat = 0.7
     static let highlightedAlpha: CGFloat = 1.0
+    /// How long the shelf stays expanded after ⌃⇧S stash (matches hover “peek” duration).
+    static let keyboardStashRevealDuration: TimeInterval = 2.0
+
     /// Narrow resting strip (must stay ≥ window min width in storyboard / `setupWindow`).
     private static let minimumVisibleEdgePixels: CGFloat = 18
 
@@ -165,6 +168,38 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
 
     func didReceiveItems(_ pasteboardItems: [NSPasteboardItem]) {
         print("[ShelfViewController] didReceiveItems count = \(pasteboardItems.count)")
+        if ingestPasteboardItems(pasteboardItems) {
+            didReceiveDropThisDraggingSession = true
+            postDropGraceUntil = Date().addingTimeInterval(1.5)
+            scheduleHighlightResetAfterInteraction()
+        }
+    }
+
+    /// ⌃⇧S — capture selection, expand shelf ~2s, then collapse unless the pointer is over the strip.
+    func stashFromKeyboardShortcut(pasteboardItems: [NSPasteboardItem]) {
+        guard !pasteboardItems.isEmpty else {
+            print("[ShelfViewController] keyboard stash: nothing to add")
+            return
+        }
+
+        cancelHighlightResetWorkItem()
+        setHighlighted(true, animated: true)
+
+        let added = ingestPasteboardItems(pasteboardItems)
+        guard added else {
+            print("[ShelfViewController] keyboard stash: pasteboard had no supported types")
+            setHighlighted(false, animated: true)
+            return
+        }
+
+        didReceiveDropThisDraggingSession = true
+        postDropGraceUntil = Date().addingTimeInterval(Self.keyboardStashRevealDuration)
+        scheduleHighlightResetAfterInteraction(after: Self.keyboardStashRevealDuration)
+        print("[ShelfViewController] keyboard stash added items, reveal \(Self.keyboardStashRevealDuration)s")
+    }
+
+    @discardableResult
+    private func ingestPasteboardItems(_ pasteboardItems: [NSPasteboardItem]) -> Bool {
         var didAddAny = false
 
         for (index, item) in pasteboardItems.enumerated() {
@@ -196,11 +231,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
                 print("[ShelfViewController] could not parse pasteboard item")
             }
         }
-        if didAddAny {
-            didReceiveDropThisDraggingSession = true
-            postDropGraceUntil = Date().addingTimeInterval(1.5)
-            scheduleHighlightResetAfterInteraction()
-        }
+        return didAddAny
     }
 
     /// While active, AppDelegate hover logic keeps the shelf expanded/highlighted.
@@ -585,8 +616,8 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         highlightResetWorkItem = nil
     }
 
-    /// After a drop, stay highlighted ~1.5s; then rest only if the cursor is not over the shelf strip.
-    private func scheduleHighlightResetAfterInteraction() {
+    /// After a drop or ⌃C stash, stay highlighted briefly; then rest only if the cursor is not over the shelf strip.
+    private func scheduleHighlightResetAfterInteraction(after delay: TimeInterval = 1.5) {
         cancelHighlightResetWorkItem()
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
@@ -597,7 +628,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
             self.setHighlighted(false, animated: true)
         }
         highlightResetWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
     private func applyCurrentSideFromSettings(animated: Bool, hideDuringMove: Bool) {
