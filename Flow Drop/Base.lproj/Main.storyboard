@@ -687,8 +687,8 @@
         <!--Window Controller-->
         <scene sceneID="Ym7-nj-O0f">
             <objects>
-                <windowController id="5m5-oM-wOV" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="bJ1-lb-nCp">
+                <windowController storyboardIdentifier="SettingsWindowController" id="5m5-oM-wOV" sceneMemberID="viewController">
+                    <window key="window" title="Flow Drop Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="bJ1-lb-nCp">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="-2135" y="278" width="480" height="270"/>
@@ -714,11 +714,11 @@
             <objects>
                 <viewController id="hGS-0G-LN1" customClass="SettingsViewController" customModule="Flow_Drop" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="OtZ-yc-8hN">
-                        <rect key="frame" x="0.0" y="0.0" width="294" height="270"/>
+                        <rect key="frame" x="0.0" y="0.0" width="250" height="220"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="70" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BbW-Za-ZY2">
-                                <rect key="frame" x="60" y="190" width="174" height="20"/>
+                            <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="30" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BbW-Za-ZY2">
+                                <rect key="frame" x="58" y="140" width="134" height="20"/>
                                 <subviews>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="9CR-er-acx">
                                         <rect key="frame" x="-2" y="3" width="50" height="18"/>
@@ -731,7 +731,7 @@
                                         </connections>
                                     </button>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Wkp-UM-Ust">
-                                        <rect key="frame" x="116" y="3" width="58" height="18"/>
+                                        <rect key="frame" x="76" y="3" width="58" height="18"/>
                                         <buttonCell key="cell" type="check" title="Right" bezelStyle="regularSquare" imagePosition="left" inset="2" id="4fl-uN-4WR">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -754,7 +754,7 @@
                                 </customSpacing>
                             </stackView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uZW-Cz-Cp6">
-                                <rect key="frame" x="90" y="133" width="114" height="32"/>
+                                <rect key="frame" x="68" y="83" width="114" height="32"/>
                                 <buttonCell key="cell" type="push" title="Clear Board" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8DU-OF-8j3">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -768,7 +768,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ylV-cX-cZl">
-                                <rect key="frame" x="89" y="89" width="115" height="22"/>
+                                <rect key="frame" x="67" y="39" width="115" height="22"/>
                                 <buttonCell key="cell" type="check" title="Persist History" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="OI1-Uy-WJR">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -781,7 +781,7 @@
                                 </connections>
                             </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ni4-N0-8cH">
-                                <rect key="frame" x="101" y="230" width="92" height="20"/>
+                                <rect key="frame" x="79" y="180" width="92" height="20"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="20" id="f00-vZ-zRs"/>
                                 </constraints>

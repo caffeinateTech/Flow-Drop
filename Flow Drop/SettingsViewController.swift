@@ -16,6 +16,11 @@ class SettingsViewController: NSViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    reloadFromUserDefaults()
+  }
+
+  /// Refresh controls from `UserDefaults` (e.g. when opening Preferences from the menu bar).
+  func reloadFromUserDefaults() {
     applySavedSettingsToUI()
   }
 

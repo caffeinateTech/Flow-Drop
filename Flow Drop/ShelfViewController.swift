@@ -42,7 +42,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("[ShelfViewController] viewDidLoad")
         setupUI()
         configureDropAreaDelegate()
         setupObservers()
@@ -57,9 +56,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         if let dropArea = findDropArea(in: view) {
             dropArea.delegate = self
             dropArea.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-            print("[ShelfViewController] DropAreaView delegate connected")
         } else {
-            print("[ShelfViewController] WARNING: DropAreaView delegate not found")
         }
     }
 
@@ -124,8 +121,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
 
         buildScrollLayoutConstraintSets()
         applyScrollLayoutForShelfExpanded(false)
-
-        print("[ShelfViewController] setupUI completed")
     }
 
     private func buildScrollLayoutConstraintSets() {
@@ -164,36 +159,24 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
     }
 
     func didReceiveItems(_ pasteboardItems: [NSPasteboardItem]) {
-        print("[ShelfViewController] didReceiveItems count = \(pasteboardItems.count)")
         var didAddAny = false
 
         for (index, item) in pasteboardItems.enumerated() {
-            print("[ShelfViewController] item[\(index)] types = \(item.types)")
             if let urlString = item.string(forType: .fileURL), let url = URL(string: urlString) {
-                print("[ShelfViewController] parsed fileURL: \(url)")
                 let bookmark = makeSecurityScopedBookmark(for: url)
-                if bookmark == nil {
-                    print("[ShelfViewController] WARNING: bookmark creation failed; drag-after-relaunch may not work for this file")
-                } else {
-                    print("[ShelfViewController] bookmark bytes=\(bookmark?.count ?? 0)")
-                }
                 addItemToShelf(kind: .fileURL, stringValue: url.absoluteString, dataValue: nil, bookmarkData: bookmark)
                 didAddAny = true
             } else if let text = item.string(forType: .string) {
-                print("[ShelfViewController] parsed string: \(text)")
                 addItemToShelf(kind: .text, stringValue: text, dataValue: nil, bookmarkData: nil)
                 didAddAny = true
             } else if let imageData = item.data(forType: .tiff) ?? item.data(forType: .png), let image = NSImage(data: imageData) {
-                print("[ShelfViewController] parsed image data")
                 _ = image
                 addItemToShelf(kind: .imageTIFF, stringValue: nil, dataValue: imageData, bookmarkData: nil)
                 didAddAny = true
             } else if let urlString = item.string(forType: .URL), let url = URL(string: urlString) {
-                print("[ShelfViewController] parsed URL: \(url)")
                 addItemToShelf(kind: .url, stringValue: url.absoluteString, dataValue: nil, bookmarkData: nil)
                 didAddAny = true
             } else {
-                print("[ShelfViewController] could not parse pasteboard item")
             }
         }
         if didAddAny {
@@ -233,7 +216,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
             bookmarkData: bookmarkData
         )
         guard let uiItem = makeDisplayItem(from: stored) else { return }
-        print("[ShelfViewController] addItemToShelf called with kind \(stored.kind.rawValue)")
         let itemView = ShelfItemView(frame: NSRect(x: 0, y: 0, width: 300, height: 50))
         itemView.itemID = stored.id
         itemView.persistedKind = stored.kind
@@ -250,7 +232,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
             self.stackView.needsLayout = true
             self.stackView.layoutSubtreeIfNeeded()
             self.scrollView.needsLayout = true
-            print("[ShelfViewController] layout updated, stackView frame: \(self.stackView.frame), item count: \(self.stackView.arrangedSubviews.count)")
             self.view.needsDisplay = true
         }
 
@@ -374,7 +355,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         currentSide = side
         let targetFrame = targetFrameForCurrentState(screen: screen, expanded: isExpanded)
         let screenID = screen.localizedName
-        print("[ShelfViewController] position screen=\(screenID) side=\(side.rawValue) expanded=\(isExpanded) animated=\(animated) hiddenMove=\(hideDuringMove)")
         lastPositionedScreenID = screenID
 
         if hideDuringMove {
@@ -430,7 +410,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         isExpanded = expanded
         let screen = pinnedScreen ?? window.screen ?? NSScreen.main
         guard let screen else {
-            print("[ShelfViewController] applyExpandedState could not resolve screen")
             return
         }
         position(on: screen, side: currentSide, animated: animated, hideDuringMove: hideDuringMove)
@@ -451,7 +430,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
                 relativeTo: nil
             )
         } catch {
-            print("[ShelfViewController] bookmarkData error: \(error.localizedDescription)")
             return nil
         }
     }
@@ -467,12 +445,8 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
                     relativeTo: nil,
                     bookmarkDataIsStale: &isStale
                 ) {
-                    if isStale {
-                        print("[ShelfViewController] bookmark is stale for id=\(item.id)")
-                    }
                     return url
                 }
-                print("[ShelfViewController] failed to resolve bookmark for id=\(item.id)")
             }
             guard let raw = item.stringValue else { return nil }
             if let url = URL(string: raw), url.isFileURL {
@@ -510,10 +484,8 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         guard defaults.bool(forKey: AppSettings.Keys.keepData),
               let data = defaults.data(forKey: AppSettings.Keys.persistedItems),
               let storedItems = try? JSONDecoder().decode([AppSettings.PersistedShelfItem].self, from: data) else {
-            print("[ShelfViewController] loadPersistedItems skipped")
             return
         }
-        print("[ShelfViewController] loadPersistedItems count=\(storedItems.count)")
 
         for stored in storedItems {
             guard let uiItem = makeDisplayItem(from: stored) else { continue }
@@ -533,12 +505,10 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         let defaults = UserDefaults.standard
         guard defaults.bool(forKey: AppSettings.Keys.keepData) else {
             defaults.removeObject(forKey: AppSettings.Keys.persistedItems)
-            print("[ShelfViewController] persistItems disabled, cleared stored data")
             return
         }
         guard let encoded = try? JSONEncoder().encode(items) else { return }
         defaults.set(encoded, forKey: AppSettings.Keys.persistedItems)
-        print("[ShelfViewController] persistItems saved count=\(items.count)")
     }
 
     private func setupObservers() {
@@ -603,13 +573,11 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
     private func applyCurrentSideFromSettings(animated: Bool, hideDuringMove: Bool) {
         let sideRaw = UserDefaults.standard.string(forKey: AppSettings.Keys.shelfSide) ?? AppSettings.ShelfSide.left.rawValue
         currentSide = AppSettings.ShelfSide(rawValue: sideRaw) ?? .left
-        print("[ShelfViewController] applyCurrentSide side=\(currentSide.rawValue)")
         applyExpandedState(isHighlighted, animated: animated, hideDuringMove: hideDuringMove)
     }
 
     override func viewDidAppear() {
         super.viewDidAppear()
-        print("[ShelfViewController] viewDidAppear")
         setupWindow()
         setHighlighted(false, animated: false)
     }

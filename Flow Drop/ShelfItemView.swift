@@ -90,7 +90,6 @@ class ShelfItemView: NSView, NSDraggingSource {
     }
 
     func configure(with item: Any) {
-        print("[ShelfItemView] configure called with \(item)")
         representedObject = item
 
         if let url = item as? URL {
@@ -100,29 +99,23 @@ class ShelfItemView: NSView, NSDraggingSource {
                 if let image = NSImage(contentsOf: url) {
                     titleLabel.stringValue = url.lastPathComponent
                     iconImageView.image = image
-                    print("[ShelfItemView] loaded image for \(url.lastPathComponent)")
                 } else {
                     titleLabel.stringValue = url.lastPathComponent
                     iconImageView.image = NSWorkspace.shared.icon(forFile: url.path)
-                    print("[ShelfItemView] failed to load image, using icon for \(url.lastPathComponent)")
                 }
             } else {
                 titleLabel.stringValue = url.lastPathComponent
                 iconImageView.image = NSWorkspace.shared.icon(forFile: url.path)
-                print("[ShelfItemView] using icon for \(url.lastPathComponent)")
             }
         } else if let text = item as? String {
             titleLabel.stringValue = text.prefix(35) + (text.count > 35 ? "..." : "")
             iconImageView.image = NSImage(systemSymbolName: "text.quote", accessibilityDescription: nil)
-            print("[ShelfItemView] configured text item")
         } else if let image = item as? NSImage {
             titleLabel.stringValue = "Image"
             iconImageView.image = image
-            print("[ShelfItemView] configured image item")
         } else {
             titleLabel.stringValue = "Unknown Item"
             iconImageView.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: nil)
-            print("[ShelfItemView] configured unknown item")
         }
 
         self.needsDisplay = true
@@ -152,7 +145,6 @@ class ShelfItemView: NSView, NSDraggingSource {
         guard let representedObject = representedObject else { return }
 
         let kind = persistedKind
-        print("[ShelfItemView] startDrag id=\(itemID ?? "nil") kind=\(kind?.rawValue ?? "unknown")")
 
         let draggingItem: NSDraggingItem
         if let url = representedObject as? URL {
@@ -163,9 +155,7 @@ class ShelfItemView: NSView, NSDraggingSource {
             } else {
                 if url.startAccessingSecurityScopedResource() {
                     securityScopedAccessActive = true
-                    print("[ShelfItemView] security scope started for drag")
                 } else {
-                    print("[ShelfItemView] WARNING: startAccessingSecurityScopedResource failed (sandbox bookmark may be missing)")
                 }
                 draggingItem = NSDraggingItem(pasteboardWriter: url as NSURL)
             }
@@ -190,7 +180,6 @@ class ShelfItemView: NSView, NSDraggingSource {
         guard securityScopedAccessActive, let url = representedObject as? URL, url.isFileURL else { return }
         url.stopAccessingSecurityScopedResource()
         securityScopedAccessActive = false
-        print("[ShelfItemView] security scope ended after drag")
     }
 
     deinit {

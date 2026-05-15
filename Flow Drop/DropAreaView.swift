@@ -38,14 +38,12 @@ class DropAreaView: NSView {
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         layer?.backgroundColor = NSColor.white.withAlphaComponent(0.2).cgColor
         delegate?.dropAreaDidEnterDrag(self)
-        print("[DropAreaView] draggingEntered types=\(sender.draggingPasteboard.types ?? [])")
         return .copy
     }
 
     override func draggingExited(_ sender: NSDraggingInfo?) {
         layer?.backgroundColor = nil
         delegate?.dropAreaDidExitDrag(self)
-        print("[DropAreaView] draggingExited")
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
@@ -53,10 +51,6 @@ class DropAreaView: NSView {
         // Apply drop first so shelf state (grace timer, items) is set before any synchronous `draggingExited`.
         delegate?.didReceiveItems(pasteboardItems)
         layer?.backgroundColor = nil
-        print("[DropAreaView] performDragOperation items=\(pasteboardItems.count)")
-        for (index, item) in pasteboardItems.enumerated() {
-            print("[DropAreaView] item[\(index)] types=\(item.types)")
-        }
         return true
     }
 }

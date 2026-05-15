@@ -65,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var lastShelfScreenNumber: UInt32?
   private var clickMonitorGlobal: Any?
   private var clickMonitorLocal: Any?
+  private var statusBarController: StatusBarController?
 
   private func screenNumber(for screen: NSScreen) -> UInt32? {
       (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value
@@ -86,11 +87,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     shelfWindowController = storyboard.instantiateController(withIdentifier: "ShelfWindowController") as? NSWindowController
 
     showShelfOnFocusedScreen()
+    setupStatusBar()
 
     setupGlobalDragMonitoring()
     setupMouseUpMonitor()
     setupClickToAnchorScreen()
     setupScreenChangeMonitoring()
+  }
+
+  private func setupStatusBar() {
+      let controller = StatusBarController()
+      controller.install()
+      statusBarController = controller
   }
 
   // MARK: - Global Drag Monitoring (The Magic)
@@ -148,7 +156,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
           return
       }
 
-      print("[AppDelegate] positionShelf target=\(targetName) id=\(String(describing: targetNum)) side=\(side.rawValue) force=\(forceReposition) animated=\(animated)")
       vc.position(on: targetScreen, side: side, animated: false, hideDuringMove: true)
       lastTargetScreenName = targetName
       if let targetNum {
@@ -179,7 +186,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
           let name = screen.localizedName
           let num = self.screenNumber(for: screen)
           if let num, let last = self.lastShelfScreenNumber, num == last { return }
-          print("[AppDelegate] clickAnchor screen=\(name) id=\(String(describing: num)) (user click)")
           self.positionShelfOnFocusedScreen(animated: false, forceReposition: true, targetScreen: screen)
       }
       clickMonitorGlobal = NSEvent.addGlobalMonitorForEvents(matching: matching) { handler($0) }
@@ -221,7 +227,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
           object: nil,
           queue: .main
       ) { [weak self] _ in
-          print("[AppDelegate] received shelfSideChanged")
           self?.positionShelfOnFocusedScreen(animated: false, forceReposition: true)
       }
   }
@@ -239,6 +244,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     if let monitor = clickMonitorLocal {
       NSEvent.removeMonitor(monitor)
     }
+    statusBarController?.uninstall()
+    statusBarController = nil
   }
 
   func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
