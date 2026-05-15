@@ -8,6 +8,10 @@
 import Cocoa
 
 class ShelfViewController: NSViewController, DropAreaViewDelegate {
+    /// Above menu/status layers; use with `NSPanel` + `fullScreenAuxiliary` so the shelf can paint over native fullscreen.
+    /// `.statusBar` was still below other apps’ fullscreen; `.popUpMenu` is the usual HUD overlay tier.
+    static let shelfWindowLevel = NSWindow.Level.popUpMenu
+
     static let restingAlpha: CGFloat = 0.7
     static let highlightedAlpha: CGFloat = 1.0
     /// Narrow resting strip (must stay ≥ window min width in storyboard / `setupWindow`).
@@ -286,16 +290,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
     func setupWindow() {
         guard let window = view.window else { return }
 
-        window.level = .floating          // Always on top
-        window.isMovable = false
-        window.isMovableByWindowBackground = false
-        window.hasShadow = true
-        window.backgroundColor = .clear
-        window.isOpaque = false
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        window.alphaValue = Self.restingAlpha
-        window.ignoresMouseEvents = false
-        window.isRestorable = false
+        ShelfWindowConfiguration.applySharedChrome(to: window)
         // Storyboard / intrinsic layout defaults can fight a 24pt-wide window; allow narrow content.
         window.contentMinSize = NSSize(width: Self.minimumVisibleEdgePixels, height: 220)
         window.minSize = NSSize(width: Self.minimumVisibleEdgePixels, height: 220)

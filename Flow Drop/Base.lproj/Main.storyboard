@@ -717,51 +717,91 @@
                         <rect key="frame" x="0.0" y="0.0" width="294" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9CR-er-acx">
-                                <rect key="frame" x="51" y="211" width="50" height="18"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="Left" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="jDu-s1-eT4">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="onLeftButtonClicked:" target="hGS-0G-LN1" id="Lvj-SP-sF5"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wkp-UM-Ust">
-                                <rect key="frame" x="163" y="211" width="58" height="18"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="Right" bezelStyle="regularSquare" imagePosition="left" inset="2" id="4fl-uN-4WR">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="onRightButtonClicked:" target="hGS-0G-LN1" id="3Vr-Tk-HCC"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uZW-Cz-Cp6">
-                                <rect key="frame" x="87" y="118" width="106" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="70" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BbW-Za-ZY2">
+                                <rect key="frame" x="60" y="190" width="174" height="20"/>
+                                <subviews>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="9CR-er-acx">
+                                        <rect key="frame" x="-2" y="3" width="50" height="18"/>
+                                        <buttonCell key="cell" type="check" title="Left" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="jDu-s1-eT4">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="onLeftButtonClicked:" target="hGS-0G-LN1" id="Lvj-SP-sF5"/>
+                                        </connections>
+                                    </button>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Wkp-UM-Ust">
+                                        <rect key="frame" x="116" y="3" width="58" height="18"/>
+                                        <buttonCell key="cell" type="check" title="Right" bezelStyle="regularSquare" imagePosition="left" inset="2" id="4fl-uN-4WR">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="onRightButtonClicked:" target="hGS-0G-LN1" id="3Vr-Tk-HCC"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20" id="uNN-I8-Gau"/>
+                                </constraints>
+                                <visibilityPriorities>
+                                    <integer value="1000"/>
+                                    <integer value="1000"/>
+                                </visibilityPriorities>
+                                <customSpacing>
+                                    <real value="3.4028234663852886e+38"/>
+                                    <real value="3.4028234663852886e+38"/>
+                                </customSpacing>
+                            </stackView>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uZW-Cz-Cp6">
+                                <rect key="frame" x="90" y="133" width="114" height="32"/>
                                 <buttonCell key="cell" type="push" title="Clear Board" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8DU-OF-8j3">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="oBt-XB-5HV"/>
+                                    <constraint firstAttribute="height" constant="20" id="us6-vA-2d7"/>
+                                </constraints>
                                 <connections>
                                     <action selector="onClearBoardButtonCLicked:" target="hGS-0G-LN1" id="b8g-Eu-rx0"/>
                                 </connections>
                             </button>
-                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ylV-cX-cZl">
-                                <rect key="frame" x="43" y="55" width="207" height="18"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="Keep board between sessions" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="OI1-Uy-WJR">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ylV-cX-cZl">
+                                <rect key="frame" x="89" y="89" width="115" height="22"/>
+                                <buttonCell key="cell" type="check" title="Persist History" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="OI1-Uy-WJR">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20" id="ekZ-oO-tjb"/>
+                                </constraints>
                                 <connections>
                                     <action selector="onKeepDataButtonClicked:" target="hGS-0G-LN1" id="Sq4-vm-okZ"/>
                                 </connections>
                             </button>
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ni4-N0-8cH">
+                                <rect key="frame" x="101" y="230" width="92" height="20"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="20" id="f00-vZ-zRs"/>
+                                </constraints>
+                                <textFieldCell key="cell" lineBreakMode="clipping" title="Board Position" id="YNH-Wv-oPz">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
+                        <constraints>
+                            <constraint firstItem="ylV-cX-cZl" firstAttribute="centerX" secondItem="OtZ-yc-8hN" secondAttribute="centerX" id="1Bl-ke-lWK"/>
+                            <constraint firstItem="uZW-Cz-Cp6" firstAttribute="centerX" secondItem="OtZ-yc-8hN" secondAttribute="centerX" id="1fI-lR-nhu"/>
+                            <constraint firstItem="Ni4-N0-8cH" firstAttribute="top" secondItem="OtZ-yc-8hN" secondAttribute="top" constant="20" id="51Q-KJ-5r6"/>
+                            <constraint firstItem="Ni4-N0-8cH" firstAttribute="centerX" secondItem="OtZ-yc-8hN" secondAttribute="centerX" id="IMB-mA-D0s"/>
+                            <constraint firstItem="BbW-Za-ZY2" firstAttribute="centerX" secondItem="OtZ-yc-8hN" secondAttribute="centerX" id="ZQx-jH-yH8"/>
+                            <constraint firstItem="ylV-cX-cZl" firstAttribute="top" secondItem="uZW-Cz-Cp6" secondAttribute="bottom" constant="30" id="fF8-Rn-84I"/>
+                            <constraint firstItem="uZW-Cz-Cp6" firstAttribute="top" secondItem="BbW-Za-ZY2" secondAttribute="bottom" constant="30" id="imV-wk-4wd"/>
+                            <constraint firstItem="BbW-Za-ZY2" firstAttribute="top" secondItem="Ni4-N0-8cH" secondAttribute="bottom" constant="20" id="xVm-Fw-Ul8"/>
+                        </constraints>
                     </view>
                     <connections>
                         <outlet property="clearBoardButton" destination="uZW-Cz-Cp6" id="YkF-Ax-psg"/>
@@ -777,7 +817,7 @@
         <!--Window Controller-->
         <scene sceneID="T8T-XH-Wo3">
             <objects>
-                <windowController storyboardIdentifier="ShelfWindowController" id="XSf-x5-iiQ" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="ShelfWindowController" id="XSf-x5-iiQ" customClass="ShelfWindowController" customModule="Flow_Drop" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Flow Drop" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="nRm-Lg-9ue">
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="-2135" y="278" width="300" height="500"/>

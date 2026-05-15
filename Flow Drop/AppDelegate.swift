@@ -116,7 +116,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       guard let vc = shelfWindowController?.contentViewController as? ShelfViewController,
             let window = shelfWindowController?.window else { return }
 
-      window.level = .floating
+      ShelfWindowConfiguration.applySharedChrome(to: window)
       window.orderFrontRegardless()
       vc.setHighlighted(false, animated: false)
       positionShelfOnFocusedScreen(animated: false, forceReposition: true)
