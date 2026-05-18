@@ -14,6 +14,8 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
 
     static let restingAlpha: CGFloat = 0.7
     static let highlightedAlpha: CGFloat = 1.0
+    /// Expand → hold → rest intro when the app launches.
+    static let launchIntroHoldDuration: TimeInterval = 2.0
     /// Narrow resting strip (must stay ≥ window min width in storyboard / `setupWindow`).
     private static let minimumVisibleEdgePixels: CGFloat = 18
 
@@ -39,6 +41,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
     private var didReceiveDropThisDraggingSession = false
     /// After a successful drop, keep shelf highlighted briefly even if hover flickers during mouse-up.
     private var postDropGraceUntil: Date?
+    private var didPlayLaunchIntro = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -555,8 +558,22 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         highlightResetWorkItem = nil
     }
 
-    /// After a drop, stay highlighted ~1.5s; then rest only if the cursor is not over the shelf strip.
-    private func scheduleHighlightResetAfterInteraction() {
+    /// Brief expand → rest on first launch so users see where the shelf lives.
+    func playLaunchIntroAnimation() {
+        guard !didPlayLaunchIntro else { return }
+        didPlayLaunchIntro = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let self, self.view.window != nil else { return }
+            self.cancelHighlightResetWorkItem()
+            self.postDropGraceUntil = Date().addingTimeInterval(Self.launchIntroHoldDuration)
+            self.setHighlighted(true, animated: true)
+            self.scheduleHighlightResetAfterInteraction(after: Self.launchIntroHoldDuration)
+        }
+    }
+
+    /// After a drop or intro, stay highlighted briefly; then rest only if the cursor is not over the shelf strip.
+    private func scheduleHighlightResetAfterInteraction(after delay: TimeInterval = 1.5) {
         cancelHighlightResetWorkItem()
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
@@ -567,7 +584,7 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
             self.setHighlighted(false, animated: true)
         }
         highlightResetWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
     private func applyCurrentSideFromSettings(animated: Bool, hideDuringMove: Bool) {
@@ -580,5 +597,6 @@ class ShelfViewController: NSViewController, DropAreaViewDelegate {
         super.viewDidAppear()
         setupWindow()
         setHighlighted(false, animated: false)
+        playLaunchIntroAnimation()
     }
 }
